@@ -495,6 +495,27 @@ RCT_EXPORT_METHOD(getCalls:(RCTPromiseResolveBlock)resolve
     resolve([RNCallKeep getCalls]);
 }
 
+RCT_EXPORT_METHOD(setAudioSessionModeDefault:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    @try {
+        NSError* err = nil;
+        AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
+        
+        NSLog(@"[RNCallKeep][setAudioSessionModeDefault]");
+        BOOL isOverrided = [myAudioSession setMode:AVAudioSessionModeDefault error:&err];
+        
+        if (!isOverrided) {
+            [NSException raise:@"overrideOutputAudioPort failed" format:@"error: %@", err];
+        }
+        resolve(@YES);
+        return;
+        
+    } @catch (NSException *e) {
+        NSLog(@"[RNCallKeep][setAudioSessionModeDefault] exception: %@", e);
+        reject(@"Failure to set audio session mode default", e, nil);
+    }
+}
+
 RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
                   inputName:(NSString *)inputName
                   resolver:(RCTPromiseResolveBlock)resolve
@@ -1073,6 +1094,12 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
 #endif
     [self configureAudioSession];
     [self sendEventWithNameWrapper:RNCallKeepPerformAnswerCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString] }];
+    
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:[action.callUUID.UUIDString lowercaseString]];
+        CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
+        callUpdate.localizedCallerName = @"Connecting...";
+        [self.callKeepProvider reportCallWithUUID:uuid updated:callUpdate];
+    
     [action fulfill];
 }
 
