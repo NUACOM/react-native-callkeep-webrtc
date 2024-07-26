@@ -43,6 +43,8 @@ continueUserActivity:(NSUserActivity *)userActivity
 + (void)endCallWithUUID:(NSString *)uuidString
                  reason:(int)reason;
 
++ (void)reportUpdateDisplay:(NSString *)uuidString displayName:(NSString *)displayName uri:(NSString *)uri options:(NSDictionary *)options;
+
 + (BOOL)isCallActive:(NSString *)uuidString;
 
 + (void)setup:(NSDictionary *)options;

@@ -417,32 +417,11 @@ RCT_EXPORT_METHOD(reportEndCallWithUUID:(NSString *)uuidString :(int)reason)
 
 RCT_EXPORT_METHOD(updateDisplay:(NSString *)uuidString :(NSString *)displayName :(NSString *)uri :(NSDictionary *)options)
 {
-#ifdef DEBUG
-    NSLog(@"[RNCallKeep][updateDisplay] uuidString = %@ displayName = %@ uri = %@", uuidString, displayName, uri);
-#endif
-    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
-    CXHandle *callHandle = [[CXHandle alloc] initWithType:CXHandleTypePhoneNumber value:uri];
-    CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
-    callUpdate.localizedCallerName = displayName;
-    callUpdate.remoteHandle = callHandle;
-
-    if ([options valueForKey:@"hasVideo"] != nil) {
-        callUpdate.hasVideo = [RCTConvert BOOL:options[@"hasVideo"]];
-    }
-    if ([options valueForKey:@"supportsHolding"] != nil) {
-        callUpdate.supportsHolding = [RCTConvert BOOL:options[@"supportsHolding"]];
-    }
-    if ([options valueForKey:@"supportsDTMF"] != nil) {
-        callUpdate.supportsDTMF = [RCTConvert BOOL:options[@"supportsDTMF"]];
-    }
-    if ([options valueForKey:@"supportsGrouping"] != nil) {
-        callUpdate.supportsGrouping = [RCTConvert BOOL:options[@"supportsGrouping"]];
-    }
-    if ([options valueForKey:@"supportsUngrouping"] != nil) {
-        callUpdate.supportsUngrouping = [RCTConvert BOOL:options[@"supportsUngrouping"]];
-    }
-
-    [self.callKeepProvider reportCallWithUUID:uuid updated:callUpdate];
+    #ifdef DEBUG
+       NSLog(@"[RNCallKeep][updateDisplay] uuidString = %@ displayName = %@ uri = %@", uuidString, displayName, uri);
+    #endif
+    
+    [RNCallKeep reportUpdateDisplay:uuidString displayName:displayName uri:uri options:options];
 }
 
 RCT_EXPORT_METHOD(setMutedCall:(NSString *)uuidString :(BOOL)muted)
@@ -569,6 +548,36 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
         NSLog(@"[RNCallKeep][getAudioRoutes] exception: %@",e);
         reject(@"Failure to get audio routes", e, nil);
     }
+}
+
++ (void)reportUpdateDisplay:(NSString *)uuidString displayName:(NSString *)displayName uri:(NSString *)uri options:(NSDictionary *)options
+{
+#ifdef DEBUG
+    NSLog(@"[RNCallKeep][updateDisplay] uuidString = %@ displayName = %@ uri = %@", uuidString, displayName, uri);
+#endif
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
+    CXHandle *callHandle = [[CXHandle alloc] initWithType:CXHandleTypePhoneNumber value:uri];
+    CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
+    callUpdate.localizedCallerName = displayName;
+    callUpdate.remoteHandle = callHandle;
+
+    if ([options valueForKey:@"hasVideo"] != nil) {
+        callUpdate.hasVideo = [RCTConvert BOOL:options[@"hasVideo"]];
+    }
+    if ([options valueForKey:@"supportsHolding"] != nil) {
+        callUpdate.supportsHolding = [RCTConvert BOOL:options[@"supportsHolding"]];
+    }
+    if ([options valueForKey:@"supportsDTMF"] != nil) {
+        callUpdate.supportsDTMF = [RCTConvert BOOL:options[@"supportsDTMF"]];
+    }
+    if ([options valueForKey:@"supportsGrouping"] != nil) {
+        callUpdate.supportsGrouping = [RCTConvert BOOL:options[@"supportsGrouping"]];
+    }
+    if ([options valueForKey:@"supportsUngrouping"] != nil) {
+        callUpdate.supportsUngrouping = [RCTConvert BOOL:options[@"supportsUngrouping"]];
+    }
+    
+    [sharedProvider reportCallWithUUID:uuid updated:callUpdate];
 }
 
 + (NSMutableArray *) formatAudioInputs: (NSMutableArray *)inputs
@@ -1096,9 +1105,9 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
     [self sendEventWithNameWrapper:RNCallKeepPerformAnswerCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString] }];
     
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:[action.callUUID.UUIDString lowercaseString]];
-        CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
-        callUpdate.localizedCallerName = @"Connecting...";
-        [self.callKeepProvider reportCallWithUUID:uuid updated:callUpdate];
+    CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
+    callUpdate.localizedCallerName = @"Connecting...";
+    [self.callKeepProvider reportCallWithUUID:uuid updated:callUpdate];
     
     [action fulfill];
 }
