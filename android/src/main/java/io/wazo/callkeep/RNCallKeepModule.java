@@ -588,7 +588,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
                allPermissionaw.pushString(allPermission);
             }
 
-            getReactApplicationContext()
+            this.reactContext
                 .getNativeModule(PermissionsModule.class)
                 .requestMultiplePermissions(allPermissionaw, new Promise() {
                     @Override
@@ -718,6 +718,8 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
             return;
         }
         conn.reportDisconnect(reason);
+
+        this.stopListenToNativeCallsState();
     }
 
    @Override
